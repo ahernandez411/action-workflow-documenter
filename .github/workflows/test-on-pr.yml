@@ -1,0 +1,15 @@
+name: Test Action Workflow Documenter
+
+on:
+  pull_request:
+
+jobs:
+  test-functionality:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Test
+      uses: ./
+      
