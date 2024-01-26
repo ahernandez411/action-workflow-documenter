@@ -24,6 +24,7 @@ runs:
   - name: Document Workflows
     shell: python
     run: |
+        print("Starting Workflow Documentation")
         import json
         import os
         import sys
@@ -227,6 +228,7 @@ runs:
             }
         
         create_markdown(workflows)
+        print("DONE!")
     
 
   - name: Save Changes to Wiki
