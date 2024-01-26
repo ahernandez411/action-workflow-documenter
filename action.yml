@@ -1,0 +1,49 @@
+name: Document Action Workflows in Repo Wiki
+
+description: Reads the workflow files in the repo and creates a wiki page with the workflow name, description, and a link to the workflow file.
+
+inputs:
+  git-repo-path:
+    name: Git Repo Path
+    description: The relative path to the git repo
+    required: truex
+
+runs:
+  using: composite
+  steps:
+  - name: Setup Python
+    uses: actions/setup-python@v5
+    with:
+      python-version: '3.x'
+
+  - name: Install Python Dependencies
+    run: |
+      pip install PyYAML==6.0.1 cron_descriptor==1.4.0
+  
+  - name: Checkout Repo Wiki
+    uses: actions/checkout@v3
+    with:
+      repository: ${{ github.repository }}.wiki
+      path: wiki
+
+  - name: Document Workflows
+    shell: python
+    run: |
+      print("hi")
+    env: 
+      GIT_REPO_PATH: ${{ inputs.git-repo-path }}
+
+  - name: Save Changes to Wiki
+    shell: bash
+    run: |
+      cd wiki
+      git config --global user.name "action-workflow-documenter"
+      git config --global user.email "action-workflow-documenter@users.noreply.github.com"
+      git add .
+      git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
+
+  
+
+
+  
+  
