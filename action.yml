@@ -1,6 +1,6 @@
 name: Document Action Workflows in Repo Wiki
 
-description: Reads the workflow files in the repo and creates a wiki page with the workflow name, description, and a link to the workflow file.
+description: Reads the workflow files in the repo and creates a wiki page with the workflow details.
 
 runs:
   using: composite
