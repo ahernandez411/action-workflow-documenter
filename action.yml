@@ -23,9 +23,210 @@ runs:
   - name: Document Workflows
     shell: python
     run: |
-      print("hi")
-    env: 
-      GIT_REPO_PATH: ${{ inputs.git-repo-path }}
+        import json
+        import os
+        import sys
+        import yaml
+
+        def get_triggers(triggers) -> list:
+            trigger_data = []
+            for trigger_name in triggers:
+                trigger = triggers.get(trigger_name)
+                if trigger_name == "schedule":
+                    cron = trigger.get("cron")
+                    description = get_description(cron)
+                    trigger_data.append({
+                        "name": trigger_name,
+                        "value": cron,
+                        "readable": description
+                    })
+                elif trigger_name == "workflow_dispatch":
+                    trigger_data.append({
+                        "name": trigger_name,
+                        "value": trigger,
+                        "readable": "Manually triggered"
+                    })
+                elif trigger_name == "repository_dispatch":
+                    trigger_data.append({
+                        "name": trigger_name,
+                        "value": trigger,
+                        "readable": "API triggered"
+                    })
+                else:
+                    trigger_data.append({
+                        "name": trigger_name,
+                        "value": trigger,
+                        "readable": trigger
+                    })
+            return trigger_data
+        
+        def get_jobs(jobs) -> list:
+            job_data = []
+            for job_name in jobs:
+                job = jobs.get(job_name)
+                runs_on = None
+                if isinstance(job.get("runs-on"), list):
+                    runs_on = ", ".join(job.get("runs-on"))
+                elif isinstance(job.get("runs-on"), str):
+                    runs_on = job.get("runs-on")
+                
+                uses = None
+                if job.get("uses"):
+                    uses = job.get("uses")
+
+                steps_data = []
+                steps = job.get("steps")
+                if steps:
+                    for step_name in steps:
+                        steps_data.append(step_name)
+                
+                with_data = []
+                withs = job.get("with")
+                if withs:
+                    for with_name in withs:
+                        with_data.append(with_name)
+
+            job_data.append({
+                "name": job_name,
+                "runs_on": runs_on,
+                "uses": uses,
+                "steps": steps_data,
+                "with": with_data
+            })                                    
+            return job_data
+        
+        def create_markdown(workflows: dict):
+            dir_wiki = os.path.join("wiki")
+            if not os.path.exists(dir_wiki):
+                os.mkdir(dir_wiki)
+            path_wiki = os.path.join(dir_wiki, "WORKFLOWS.md")
+
+            markdown = [
+                "# Workflows in this repository"
+            ]
+            for workflow_file in workflows:
+                workflow = workflows.get(workflow_file)
+                name = workflow.get("name")
+                triggers = workflow.get("triggers")
+                jobs = workflow.get("jobs")
+
+                markdown.append(f"## {name}")
+                markdown.append("<details><summary>View Triggers and Jobs</summary>")
+                markdown.append("<p>")
+                
+                print(f"Creating markdown for {name}")
+                triggers_md = [
+                    "<h3>Triggers</h3>",
+                    "<table valign='top'>",
+                    "<thead>",
+                    "<tr>",
+                    "<th>ON</th>",
+                    "<th>DETAILS</th>",
+                    "<th>VALUE</th>",
+                    "</tr>",
+                    "</thead>",
+                    "<tbody>"
+                ]
+                for trigger in triggers:
+                    name = trigger.get("name")
+                    value = trigger.get("value")
+                    readable = trigger.get("readable")                
+
+                    triggers_md.append("<tr>")
+                    triggers_md.append(f"<td valign='top'>{name}</td>")
+                    triggers_md.append(f"<td valign='top'>{readable}</td>")
+                    triggers_md.append(f"<td valign='top'><pre>{value}</pre></td>")
+                    triggers_md.append("</tr>")
+                
+                triggers_md.append("</tbody>")
+                triggers_md.append("</table>")
+                triggers_md.append("")
+
+                markdown.extend(triggers_md)                
+
+                jobs_md = [
+                    "### Jobs",
+                    "<table valign='top'>",
+                    "<thead>",
+                    "<tr>",
+                    "<th>NAME</th>",
+                    "<th>RUNS-ON or USES</th>",
+                    "<th>STEPS</th>",
+                    "</tr>",
+                    "</thead>",
+                    "<tbody>"
+                ]
+                for job in jobs:
+                    name = job.get("name")
+                    runs_on = job.get("runs_on")
+                    uses = job.get("uses")
+                    steps = job.get("steps")
+
+                    jobs_md.append("<tr>")
+                    jobs_md.append(f"<td valign='top'>{name}</td>")
+                    if runs_on:
+                        jobs_md.append(f"<td valign='top'>{runs_on}</td>")
+                    elif uses:
+                        jobs_md.append(f"<td valign='top'>{uses}</td>")
+                    else:
+                        jobs_md.append(f"<td valign='top'></td>")
+                    
+                    if steps:
+                        jobs_md.append("<td>")
+                        jobs_md.append("<ol>")
+                        for step_name in steps:
+                            jobs_md.append(f"<li>{step_name}</li>")
+                        jobs_md.append("</ol>")
+                        jobs_md.append("</td>")
+                    else:
+                        jobs_md.append("<td></td>")
+                    
+                    jobs_md.append("</tr>")
+                
+                jobs_md.append("</tbody>")
+                jobs_md.append("</table>")
+                jobs_md.append("")
+
+                markdown.extend(jobs_md)
+                markdown.append("</p>")
+                markdown.append("</details>")
+                markdown.append("")     
+
+            with open(path_wiki, "w") as writer:
+                markdown_str = os.linesep.join(markdown)
+                writer.write(markdown_str)
+                
+        path_workflows = os.path.join(".github", "workflows")
+        if not os.path.exists(path_workflows):
+            print(f"Could not find workflows at {path_workflows}")
+            sys.exit(0)
+
+        files_in_workflows = os.listdir(path_workflows)
+
+        workflows = {}
+        for file_name in files_in_workflows:
+            if not file_name.endswith(".yml"):
+                continue
+
+            print(f"Reading {file_name}")
+            path_file = os.path.join(path_workflows, file_name)
+
+            workflow = None
+            with open(path_file, "r") as reader:
+                workflow = yaml.safe_load(reader)
+
+                name = workflow.get("name")
+                triggers = get_triggers(workflow.get(True))
+                jobs = get_jobs(workflow.get("jobs"))
+
+            workflows[file_name] = {
+                "name": name,
+                "triggers": triggers,
+                "jobs": jobs
+            }
+        
+        create_markdown(workflows)
+    
 
   - name: Save Changes to Wiki
     shell: bash
