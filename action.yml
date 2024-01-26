@@ -2,12 +2,6 @@ name: Document Action Workflows in Repo Wiki
 
 description: Reads the workflow files in the repo and creates a wiki page with the workflow name, description, and a link to the workflow file.
 
-inputs:
-  git-repo-path:
-    name: Git Repo Path
-    description: The relative path to the git repo
-    required: truex
-
 runs:
   using: composite
   steps:
