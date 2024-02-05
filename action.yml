@@ -20,9 +20,9 @@ runs:
     id: input-conditions
     shell: bash
     run: |
-      echo "::set-output name=save-to-artifact::${{ inputs.save-to-artifact }}"
-      echo "::set-output name=save-to-branch::${{ inputs.save-to-branch }}"
-      echo "::set-output name=save-to-wiki::${{ inputs.save-to-wiki }}"
+      echo "save-to-artifact=${{ inputs.save-to-artifact }}" >> $GITHUB_OUTPUT
+      echo "save-to-branch=${{ inputs.save-to-branch }}" >> $GITHUB_OUTPUT
+      echo "save-to-wiki=${{ inputs.save-to-wiki }}" >> $GITHUB_OUTPUT
 
   - name: Setup Python
     uses: actions/setup-python@v5
