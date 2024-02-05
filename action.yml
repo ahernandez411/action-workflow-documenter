@@ -310,6 +310,7 @@ runs:
     with:
       name: actions-documentation
       path: WORKFLOWS.md
+      retention-days: 1
      
       
 

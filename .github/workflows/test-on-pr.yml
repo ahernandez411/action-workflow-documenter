@@ -7,6 +7,11 @@ jobs:
   test-functionality:
     runs-on: ubuntu-latest
     steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    
     - name: Checkout
       uses: actions/checkout@v4
 
@@ -18,12 +23,46 @@ jobs:
         save-to-branch: "false"
         save-to-wiki: "false"
 
-    - name: Run Test with Save to Branch
-      if: always()
-      uses: ./
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
       with:
-        save-to-artifact: "false"
-        save-to-branch: "true"
-        save-to-wiki: "false"
+        name: actions-documentation
+
+    - name: Verify Actions Documentation
+      shell: python
+      run: |
+        import os
+        import sys
+
+        file_workflows = "WORKFLOWS.md"
+        find_build_and_review_pr = "Build and Review PR"
+        find_incrememt_version_on_merge = "Increment Version on Merge"
+        find_test_action_workflow_documenter = "Test Action Workflow Documenter"
+
+        finds = [
+          find_build_and_review_pr,
+          find_incrememt_version_on_merge,
+          find_test_action_workflow_documenter
+        ]
+
+        if not os.path.exists(file_workflows):
+          raise Exception(f"File {file_workflows} does not exist")
+        
+        not_founds = []
+        with open(file_workflows, "r") as reader:
+          contents = reader.read()
+          
+          for find in finds:
+            if find not in contents:
+              not_founds.append(find)
+        
+        if len(not_founds) > 0:
+          print(f"Could not find the following workflows: {not_founds}")
+          sys.exit(1)
+          
+
+          
+
+        
 
       
