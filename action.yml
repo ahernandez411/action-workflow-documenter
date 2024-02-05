@@ -14,9 +14,9 @@ inputs:
     required: true
 
 env:
-  SAVE_TO_ARTIFACT: ${{ inputs.save-to-artifact }}
-  SAVE_TO_BRANCH: ${{ inputs.save-to-branch }}
-  SAVE_TO_WIKI: ${{ inputs.save-to-wiki }}
+  SAVE_TO_ARTIFACT: ${{ github.event.inputs.save-to-artifact }}
+  SAVE_TO_BRANCH: ${{ github.event.inputs.save-to-branch }}
+  SAVE_TO_WIKI: ${{ github.event.inputs.save-to-wiki }}
 
 runs:
   using: composite
