@@ -16,13 +16,13 @@ inputs:
 runs:
   using: composite    
   steps:
-  - name: Convert Inputs to Env Variables
+  - name: Set inputs as outputs
+    id: input-conditions
     shell: bash
     run: |
-      set -x
-      echo "SAVE_TO_ARTIFACT=${{ inputs.save-to-artifact }}" >> $GITHUB_ENV
-      echo "SAVE_TO_BRANCH=${{ inputs.save-to-branch }}" >> $GITHUB_ENV
-      echo "SAVE_TO_WIKI=${{ inputs.save-to-wiki }}" >> $GITHUB_ENV
+      echo "::set-output name=save-to-artifact::${{ inputs.save-to-artifact }}"
+      echo "::set-output name=save-to-branch::${{ inputs.save-to-branch }}"
+      echo "::set-output name=save-to-wiki::${{ inputs.save-to-wiki }}"
 
   - name: Setup Python
     uses: actions/setup-python@v5
@@ -35,7 +35,7 @@ runs:
       pip install PyYAML==6.0.1 cron_descriptor==1.4.0
   
   - name: Checkout Repo Wiki
-    if: ${{ env.SAVE_TO_WIKI }} == 'true'
+    if: steps.input-conditions.outputs['save-to-wiki'] == 'true'
     uses: actions/checkout@v3
     with:
       repository: ${{ github.repository }}.wiki
@@ -43,6 +43,10 @@ runs:
 
   - name: Document Workflows
     shell: python
+    env:
+      SAVE_TO_WIKI: ${{ steps.input-conditions.outputs['save-to-wiki'] }}
+      SAVE_TO_BRANCH: ${{ steps.input-conditions.outputs['save-to-branch'] }}
+      SAVE_TO_ARTIFACT: ${{ steps.input-conditions.outputs['save-to-artifact'] }}
     run: |
         print("Starting Workflow Documentation")
         import json
@@ -276,7 +280,7 @@ runs:
         print("DONE!")
     
   - name: Save Changes to Wiki
-    if: ${{ env.SAVE_TO_WIKI }} == 'true'
+    if: steps.input-conditions.outputs['save-to-wiki'] == 'true'
     shell: bash
     run: |
       cd wiki
@@ -286,7 +290,7 @@ runs:
       git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
 
   - name: Save Changes to Branch
-    if: ${{ env.SAVE_TO_BRANCH }} == 'true'
+    if: steps.input-conditions.outputs['save-to-branch'] == 'true'
     shell: bash
     run: |
       cd wiki
@@ -298,7 +302,7 @@ runs:
       git push --set-upstream origin actions-documentation
 
   - name: Save Changes to Artifact
-    if: ${{ env.SAVE_TO_ARTIFACT }} == 'true'
+    if: steps.input-conditions.outputs['save-to-artifact'] == 'true'
     uses: actions/upload-artifact@v4
     with:
       name: actions-documentation
