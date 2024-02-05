@@ -3,6 +3,9 @@ name: Document Action Workflows in Repo Wiki
 description: Reads the workflow files in the repo and creates a wiki page with the workflow details.
 
 inputs:
+  github-pat:
+    description: The github personal access token used for interactions with github
+    required: true
   save-to-artifact:
     description: If true, save to documentation as an artifact
     required: true
@@ -12,6 +15,10 @@ inputs:
   save-to-wiki:
     description: If true, save to documentation to repository's wiki
     required: true
+
+permissions:
+  contents: write
+  wikis: write
 
 runs:
   using: composite    
@@ -42,6 +49,7 @@ runs:
     with:
       repository: ${{ github.repository }}.wiki
       path: wiki
+      token: ${{ inputs.github-pat }}
 
   - name: Document Workflows
     shell: python
@@ -289,7 +297,9 @@ runs:
       cd wiki
       git config --global user.name "action-workflow-documenter"
       git config --global user.email "action-workflow-documenter@users.noreply.github.com"
-      git add .
+      git remote set-url origin https://x-access-token:${{ inputs.github-pat }}@github.com/$GITHUB_REPOSITORY
+
+      git add .      
       git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
 
   - name: Save Changes to Branch
@@ -299,6 +309,8 @@ runs:
       set -x
       git config --global user.name "action-workflow-documenter"
       git config --global user.email "action-workflow-documenter@users.noreply.github.com"
+      git remote set-url origin https://x-access-token:${{ inputs.github-pat }}@github.com/$GITHUB_REPOSITORY
+
       git add .
       git checkout -b actions-documentation
       git commit -m "Add actions documentation"
