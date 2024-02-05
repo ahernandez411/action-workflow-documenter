@@ -5,15 +5,12 @@ description: Reads the workflow files in the repo and creates a wiki page with t
 inputs:
   save-to-artifact:
     description: If true, save to documentation as an artifact
-    type: boolean
     required: true
   save-to-branch:
     description: If true, save to documentation to a branch
-    type: boolean
     required: true
   save-to-wiki:
     description: If true, save to documentation to repository's wiki
-    type: boolean
     required: true
 
 runs:
@@ -30,7 +27,7 @@ runs:
       pip install PyYAML==6.0.1 cron_descriptor==1.4.0
   
   - name: Checkout Repo Wiki
-    if: ${{ inputs.save-to-wiki }} == true
+    if: ${{ inputs.save-to-wiki }} == 'true'
     uses: actions/checkout@v3
     with:
       repository: ${{ github.repository }}.wiki
@@ -275,7 +272,7 @@ runs:
         print("DONE!")
     
   - name: Save Changes to Wiki
-    if: ${{ inputs.save-to-wiki }} == true
+    if: ${{ inputs.save-to-wiki }} == 'true'
     shell: bash
     run: |
       cd wiki
@@ -285,7 +282,7 @@ runs:
       git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
 
   - name: Save Changes to Branch
-    if: ${{ inputs.save-to-branch }} == true
+    if: ${{ inputs.save-to-branch }} == 'true'
     shell: bash
     run: |
       cd wiki
@@ -297,7 +294,7 @@ runs:
       git push --set-upstream origin actions-documentation
 
   - name: Save Changes to Artifact
-    if: ${{ inputs.save-to-artifact }} == true
+    if: ${{ inputs.save-to-artifact }} == 'true'
     uses: actions/upload-artifact@v4
     with:
       name: actions-documentation
