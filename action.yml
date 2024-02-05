@@ -115,11 +115,22 @@ runs:
             })                                    
             return job_data
         
-        def create_markdown(workflows: dict):
-            dir_wiki = os.path.join("wiki")
-            if not os.path.exists(dir_wiki):
-                os.mkdir(dir_wiki)
-            path_wiki = os.path.join(dir_wiki, "WORKFLOWS.md")
+        def create_markdown(workflows: dict, save_to_branch: bool, save_to_wiki: bool):
+            path_wiki = None
+            path_docs = None
+
+            if not save_to_branch and not save_to_wiki:
+                print("No save location provided. Exiting")
+                return
+
+            if save_to_wiki:
+                dir_wiki = os.path.join("wiki")
+                if not os.path.exists(dir_wiki):
+                    os.mkdir(dir_wiki)
+                path_wiki = os.path.join(dir_wiki, "WORKFLOWS.md")
+            
+            if save_to_branch:
+                path_docs = os.path.join("WORKFLOWS.md")                             
 
             markdown = [
                 "# Workflows in this repository"
@@ -212,10 +223,24 @@ runs:
                 markdown.append("</details>")
                 markdown.append("")     
 
-            with open(path_wiki, "w") as writer:
-                markdown_str = os.linesep.join(markdown)
-                writer.write(markdown_str)
-                
+            if path_wiki:
+                print("Saving docs to Wiki")
+                with open(path_wiki, "w") as writer:
+                    markdown_str = os.linesep.join(markdown)
+                    writer.write(markdown_str)
+
+            if path_docs:
+                print("Saving docs to branch")
+                with open(path_docs, "w") as writer:
+                    markdown_str = os.linesep.join(markdown)
+                    writer.write(markdown_str)
+
+        save_to_wiki = str(os.getenv("SAVE_TO_WIKI", "false")).lower() == "true"
+        save_to_branch = str(os.getenv("SAVE_TO_BRANCH", "false")).lower() == "true"
+        save_to_artifact = str(os.getenv("SAVE_TO_ARTIFACT", "false")).lower() == "true"
+        if not save_to_branch:
+            save_to_branch = save_to_artifact        
+
         path_workflows = os.path.join(".github", "workflows")
         if not os.path.exists(path_workflows):
             print(f"Could not find workflows at {path_workflows}")
@@ -245,7 +270,7 @@ runs:
                 "jobs": jobs
             }
         
-        create_markdown(workflows)
+        create_markdown(workflows, save_to_branch, save_to_wiki)
         print("DONE!")
     
   - name: Save Changes to Wiki
