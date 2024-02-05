@@ -13,14 +13,17 @@ inputs:
     description: If true, save to documentation to repository's wiki
     required: true
 
-runs:  
-  env:
-    SAVE_TO_ARTIFACT: ${{ github.event.inputs.save-to-artifact }}
-    SAVE_TO_BRANCH: ${{ github.event.inputs.save-to-branch }}
-    SAVE_TO_WIKI: ${{ github.event.inputs.save-to-wiki }}
-  
+runs:
   using: composite    
   steps:
+  - name: Convert Inputs to Env Variables
+    shell: bash
+    run: |
+      set -x
+      echo "SAVE_TO_ARTIFACT=${{ inputs.save-to-artifact }}" >> $GITHUB_ENV
+      echo "SAVE_TO_BRANCH=${{ inputs.save-to-branch }}" >> $GITHUB_ENV
+      echo "SAVE_TO_WIKI=${{ inputs.save-to-wiki }}" >> $GITHUB_ENV
+
   - name: Setup Python
     uses: actions/setup-python@v5
     with:
