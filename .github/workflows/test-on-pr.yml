@@ -23,10 +23,20 @@ jobs:
         save-to-branch: "false"
         save-to-wiki: "false"
 
+    - name: Show Files Before Artifact Download
+      run: |
+        set -x
+        ls -lh
+
     - name: Download Artifact
       uses: actions/download-artifact@v4
       with:
-        name: actions-documentation
+        name: actions-documentation        
+
+    - name: Show Files After Artifact Download
+      run: |
+        set -x
+        ls -lh
 
     - name: Verify Actions Documentation
       shell: python
