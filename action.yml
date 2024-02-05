@@ -20,6 +20,7 @@ runs:
     id: input-conditions
     shell: bash
     run: |
+      set -x
       echo "save-to-artifact=${{ inputs.save-to-artifact }}" >> $GITHUB_OUTPUT
       echo "save-to-branch=${{ inputs.save-to-branch }}" >> $GITHUB_OUTPUT
       echo "save-to-wiki=${{ inputs.save-to-wiki }}" >> $GITHUB_OUTPUT
@@ -32,6 +33,7 @@ runs:
   - name: Install Python Dependencies
     shell: bash
     run: |
+      set -x
       pip install PyYAML==6.0.1 cron_descriptor==1.4.0
   
   - name: Checkout Repo Wiki
@@ -283,6 +285,7 @@ runs:
     if: steps.input-conditions.outputs['save-to-wiki'] == 'true'
     shell: bash
     run: |
+      set -x
       cd wiki
       git config --global user.name "action-workflow-documenter"
       git config --global user.email "action-workflow-documenter@users.noreply.github.com"
@@ -293,6 +296,7 @@ runs:
     if: steps.input-conditions.outputs['save-to-branch'] == 'true'
     shell: bash
     run: |
+      set -x
       cd wiki
       git config --global user.name "action-workflow-documenter"
       git config --global user.email "action-workflow-documenter@users.noreply.github.com"
