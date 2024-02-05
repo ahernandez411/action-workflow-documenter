@@ -7,14 +7,14 @@ inputs:
     description: The github personal access token used for interactions with github.
     required: true
   save-to-artifact:
-    description: If true, save to documentation as an artifact
-    required: true
+    description: If true, save to documentation as an artifact. This is mostly used for testing purposes.
+    required: false
   save-to-branch:
     description: If true, save to documentation to a branch
-    required: true
+    required: false
   save-to-wiki:
     description: If true, save to documentation to repository's wiki
-    required: true
+    required: false
 
 permissions:
   contents: write
