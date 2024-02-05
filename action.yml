@@ -13,6 +13,11 @@ inputs:
     description: If true, save to documentation to repository's wiki
     required: true
 
+env:
+  SAVE_TO_ARTIFACT: ${{ inputs.save-to-artifact }}
+  SAVE_TO_BRANCH: ${{ inputs.save-to-branch }}
+  SAVE_TO_WIKI: ${{ inputs.save-to-wiki }}
+
 runs:
   using: composite
   steps:
@@ -27,7 +32,7 @@ runs:
       pip install PyYAML==6.0.1 cron_descriptor==1.4.0
   
   - name: Checkout Repo Wiki
-    if: ${{ inputs.save-to-wiki }} == 'true'
+    if: ${{ env.SAVE_TO_WIKI }} == 'true'
     uses: actions/checkout@v3
     with:
       repository: ${{ github.repository }}.wiki
@@ -35,10 +40,6 @@ runs:
 
   - name: Document Workflows
     shell: python
-    env:
-      SAVE_TO_ARTIFACT: ${{ inputs.save-to-artifact }}
-      SAVE_TO_BRANCH: ${{ inputs.save-to-branch }}
-      SAVE_TO_WIKI: ${{ inputs.save-to-wiki }}
     run: |
         print("Starting Workflow Documentation")
         import json
@@ -272,7 +273,7 @@ runs:
         print("DONE!")
     
   - name: Save Changes to Wiki
-    if: ${{ inputs.save-to-wiki }} == 'true'
+    if: ${{ env.SAVE_TO_WIKI }} == 'true'
     shell: bash
     run: |
       cd wiki
@@ -282,7 +283,7 @@ runs:
       git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
 
   - name: Save Changes to Branch
-    if: ${{ inputs.save-to-branch }} == 'true'
+    if: ${{ env.SAVE_TO_BRANCH }} == 'true'
     shell: bash
     run: |
       cd wiki
@@ -294,7 +295,7 @@ runs:
       git push --set-upstream origin actions-documentation
 
   - name: Save Changes to Artifact
-    if: ${{ inputs.save-to-artifact }} == 'true'
+    if: ${{ env.SAVE_TO_ARTIFACT }} == 'true'
     uses: actions/upload-artifact@v4
     with:
       name: actions-documentation
