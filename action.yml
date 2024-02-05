@@ -2,6 +2,20 @@ name: Document Action Workflows in Repo Wiki
 
 description: Reads the workflow files in the repo and creates a wiki page with the workflow details.
 
+inputs:
+  save-to-artifact:
+    description: If true, save to documentation as an artifact
+    type: boolean
+    required: true
+  save-to-branch:
+    description: If true, save to documentation to a branch
+    type: boolean
+    required: true
+  save-to-wiki:
+    description: If true, save to documentation to repository's wiki
+    type: boolean
+    required: true
+
 runs:
   using: composite
   steps:
@@ -23,6 +37,10 @@ runs:
 
   - name: Document Workflows
     shell: python
+    env:
+      SAVE_TO_ARTIFACT: ${{ inputs.save-to-artifact }}
+      SAVE_TO_BRANCH: ${{ inputs.save-to-branch }}
+      SAVE_TO_WIKI: ${{ inputs.save-to-wiki }}
     run: |
         print("Starting Workflow Documentation")
         import json
@@ -230,8 +248,8 @@ runs:
         create_markdown(workflows)
         print("DONE!")
     
-
   - name: Save Changes to Wiki
+    if: ${{ inputs.save-to-wiki }} == true
     shell: bash
     run: |
       cd wiki
@@ -239,6 +257,27 @@ runs:
       git config --global user.email "action-workflow-documenter@users.noreply.github.com"
       git add .
       git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
+
+  - name: Save Changes to Branch
+    if: ${{ inputs.save-to-branch }} == true
+    shell: bash
+    run: |
+      cd wiki
+      git config --global user.name "action-workflow-documenter"
+      git config --global user.email "action-workflow-documenter@users.noreply.github.com"
+      git add .
+      git checkout -b actions-documentation
+      git commit -m "Add actions documentation"
+      git push --set-upstream origin actions-documentation
+
+  - name: Save Changes to Artifact
+    if: ${{ inputs.save-to-artifact }} == true
+    uses: actions/upload-artifact@v4
+    with:
+      name: actions-documentation
+      path: WORKLFOWS.md
+     
+      
 
   
 

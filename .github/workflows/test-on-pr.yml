@@ -12,4 +12,9 @@ jobs:
 
     - name: Run Test
       uses: ./
+      with:
+        save-to-artifact: true
+        save-to-branch: false
+        save-to-wiki: false
+
       
