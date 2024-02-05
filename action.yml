@@ -3,6 +3,9 @@ name: Document Action Workflows in Repo Wiki
 description: Reads the workflow files in the repo and creates a wiki page with the workflow details.
 
 inputs:
+  github-pat:
+    description: The github personal access token used for interactions with github
+    required: true
   save-to-artifact:
     description: If true, save to documentation as an artifact
     required: true
@@ -11,9 +14,6 @@ inputs:
     required: true
   save-to-wiki:
     description: If true, save to documentation to repository's wiki
-    required: true
-  github-pat:
-    description: The github personal access token used for interactions with github
     required: true
 
 permissions:
