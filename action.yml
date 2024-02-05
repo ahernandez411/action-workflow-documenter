@@ -310,7 +310,7 @@ runs:
     uses: actions/upload-artifact@v4
     with:
       name: actions-documentation
-      path: WORKLFOWS.md
+      path: WORKFLOWS.md
      
       
 
