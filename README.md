@@ -18,9 +18,9 @@ This tool will document action workflows in a repository
 | Parameter          | Is Required | Default Value   | Description                                                         |
 | ------------------ | ----------- | --------------- | ------------------------------------------------------------------  |
 | `github-pat`       | true        | None            | The github personal access token used for interactions with github. |
-| `save-to-artifact` | false       | None            | If `true`, save to documentation as an artifact. Used for testing.  |
-| `save-to-branch`   | false       | None            | If `true`, save to documentation to a branch                        |
-| `save-to-wiki`     | false       | None            | If `true`, save to documentation to repository's wiki               |
+| `save-to-artifact` | false       | `'false'`       | If `true`, save to documentation as an artifact. Used for testing.  |
+| `save-to-branch`   | false       | `'false'`       | If `true`, save to documentation to a branch                        |
+| `save-to-wiki`     | false       | `'false'`       | If `true`, save to documentation to repository's wiki               |
 
 
 ## Outputs
