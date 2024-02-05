@@ -30,6 +30,7 @@ runs:
       pip install PyYAML==6.0.1 cron_descriptor==1.4.0
   
   - name: Checkout Repo Wiki
+    if: ${{ inputs.save-to-wiki }} == true
     uses: actions/checkout@v3
     with:
       repository: ${{ github.repository }}.wiki
