@@ -1,0 +1,86 @@
+name: Test Action Workflow Documenter
+
+on:
+  pull_request:
+
+jobs:
+  test-functionality:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+    
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Run Test with Save to Artifact
+      if: always()
+      uses: ./
+      with:
+        save-to-artifact: "true"
+        save-to-branch: "false"
+        save-to-wiki: "false"
+
+    - name: Show Files Before Artifact Download
+      run: |
+        set -x
+        ls -lh
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: actions-documentation        
+
+    - name: Show Files After Artifact Download
+      run: |
+        set -x
+        ls -lh
+
+    - name: Verify Actions Documentation
+      shell: python
+      run: |
+        import os
+        import sys
+        
+        print("#########################################")
+        print("Verifying Actions Documentation")
+        print("#########################################")
+        
+        file_workflows = "WORKFLOWS.md"
+        finds = [
+          "Build and Review PR",
+          "Increment Version on Merge",
+          "Test Action Workflow Documenter"
+        ]
+
+        if not os.path.exists(file_workflows):
+          print(f"File '{file_workflows}' does not exist")
+          sys.exit(1)          
+        else:
+          print(f"Found '{file_workflows}'")
+        
+        not_founds = []
+        print(f"Look for specific strings in '{file_workflows}'...")
+        with open(file_workflows, "r") as reader:
+          contents = reader.read()
+          
+          for find in finds:
+            if find not in contents:
+              print(f"ERROR: Could not find '{find}' in '{file_workflows}'")
+              not_founds.append(find)
+            else:
+              print(f"Found '{find}' in '{file_workflows}'")
+        
+        if len(not_founds) > 0:
+          sys.exit(1)
+
+        print("DONE!")
+          
+
+          
+
+        
+
+      

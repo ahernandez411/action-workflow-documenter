@@ -1,20 +1,43 @@
 name: Document Action Workflows in Repo Wiki
 
-description: Reads the workflow files in the repo and creates a wiki page with the workflow name, description, and a link to the workflow file.
+description: Reads the workflow files in the repo and creates a wiki page with the workflow details.
+
+inputs:
+  save-to-artifact:
+    description: If true, save to documentation as an artifact
+    required: true
+  save-to-branch:
+    description: If true, save to documentation to a branch
+    required: true
+  save-to-wiki:
+    description: If true, save to documentation to repository's wiki
+    required: true
 
 runs:
-  using: composite
+  using: composite    
   steps:
+  - name: Set inputs as outputs
+    id: input-conditions
+    shell: bash
+    run: |
+      set -x
+      echo "save-to-artifact=${{ inputs.save-to-artifact }}" >> $GITHUB_OUTPUT
+      echo "save-to-branch=${{ inputs.save-to-branch }}" >> $GITHUB_OUTPUT
+      echo "save-to-wiki=${{ inputs.save-to-wiki }}" >> $GITHUB_OUTPUT
+
   - name: Setup Python
     uses: actions/setup-python@v5
     with:
       python-version: '3.x'
 
   - name: Install Python Dependencies
+    shell: bash
     run: |
+      set -x
       pip install PyYAML==6.0.1 cron_descriptor==1.4.0
   
   - name: Checkout Repo Wiki
+    if: steps.input-conditions.outputs['save-to-wiki'] == 'true'
     uses: actions/checkout@v3
     with:
       repository: ${{ github.repository }}.wiki
@@ -22,7 +45,12 @@ runs:
 
   - name: Document Workflows
     shell: python
+    env:
+      SAVE_TO_WIKI: ${{ steps.input-conditions.outputs['save-to-wiki'] }}
+      SAVE_TO_BRANCH: ${{ steps.input-conditions.outputs['save-to-branch'] }}
+      SAVE_TO_ARTIFACT: ${{ steps.input-conditions.outputs['save-to-artifact'] }}
     run: |
+        print("Starting Workflow Documentation")
         import json
         import os
         import sys
@@ -95,11 +123,22 @@ runs:
             })                                    
             return job_data
         
-        def create_markdown(workflows: dict):
-            dir_wiki = os.path.join("wiki")
-            if not os.path.exists(dir_wiki):
-                os.mkdir(dir_wiki)
-            path_wiki = os.path.join(dir_wiki, "WORKFLOWS.md")
+        def create_markdown(workflows: dict, save_to_branch: bool, save_to_wiki: bool):
+            path_wiki = None
+            path_docs = None
+
+            if not save_to_branch and not save_to_wiki:
+                print("No save location provided. Exiting")
+                return
+
+            if save_to_wiki:
+                dir_wiki = os.path.join("wiki")
+                if not os.path.exists(dir_wiki):
+                    os.mkdir(dir_wiki)
+                path_wiki = os.path.join(dir_wiki, "WORKFLOWS.md")
+            
+            if save_to_branch:
+                path_docs = os.path.join("WORKFLOWS.md")                             
 
             markdown = [
                 "# Workflows in this repository"
@@ -192,10 +231,24 @@ runs:
                 markdown.append("</details>")
                 markdown.append("")     
 
-            with open(path_wiki, "w") as writer:
-                markdown_str = os.linesep.join(markdown)
-                writer.write(markdown_str)
-                
+            if path_wiki:
+                print("Saving docs to Wiki")
+                with open(path_wiki, "w") as writer:
+                    markdown_str = os.linesep.join(markdown)
+                    writer.write(markdown_str)
+
+            if path_docs:
+                print("Saving docs to branch")
+                with open(path_docs, "w") as writer:
+                    markdown_str = os.linesep.join(markdown)
+                    writer.write(markdown_str)
+
+        save_to_wiki = str(os.getenv("SAVE_TO_WIKI", "false")).lower() == "true"
+        save_to_branch = str(os.getenv("SAVE_TO_BRANCH", "false")).lower() == "true"
+        save_to_artifact = str(os.getenv("SAVE_TO_ARTIFACT", "false")).lower() == "true"
+        if not save_to_branch:
+            save_to_branch = save_to_artifact        
+
         path_workflows = os.path.join(".github", "workflows")
         if not os.path.exists(path_workflows):
             print(f"Could not find workflows at {path_workflows}")
@@ -225,17 +278,48 @@ runs:
                 "jobs": jobs
             }
         
-        create_markdown(workflows)
+        create_markdown(workflows, save_to_branch, save_to_wiki)
+        print("DONE!")
     
-
   - name: Save Changes to Wiki
+    if: steps.input-conditions.outputs['save-to-wiki'] == 'true'
     shell: bash
     run: |
+      set -x
       cd wiki
       git config --global user.name "action-workflow-documenter"
       git config --global user.email "action-workflow-documenter@users.noreply.github.com"
       git add .
       git diff-index --quiet HEAD || git commit -m "Update wiki with latest workflow documentation" && git push
+
+  - name: Save Changes to Branch
+    if: steps.input-conditions.outputs['save-to-branch'] == 'true'
+    shell: bash
+    run: |
+      set -x
+      git config --global user.name "action-workflow-documenter"
+      git config --global user.email "action-workflow-documenter@users.noreply.github.com"
+      git add .
+      git checkout -b actions-documentation
+      git commit -m "Add actions documentation"
+      git push --set-upstream origin actions-documentation
+
+  - name: Save Changes to Artifact
+    if: steps.input-conditions.outputs['save-to-artifact'] == 'true'
+    uses: actions/upload-artifact@v4
+    with:
+      name: actions-documentation
+      path: WORKFLOWS.md
+      retention-days: 1
+
+  - name: Cleanup Changes
+    if: steps.input-conditions.outputs['save-to-artifact'] == 'true'
+    shell: bash
+    run: |
+      set -x
+      rm WORKFLOWS.md      
+     
+      
 
   
 
