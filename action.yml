@@ -13,13 +13,14 @@ inputs:
     description: If true, save to documentation to repository's wiki
     required: true
 
-env:
-  SAVE_TO_ARTIFACT: ${{ github.event.inputs.save-to-artifact }}
-  SAVE_TO_BRANCH: ${{ github.event.inputs.save-to-branch }}
-  SAVE_TO_WIKI: ${{ github.event.inputs.save-to-wiki }}
-
-runs:
+runs:  
   using: composite
+  
+  env:
+    SAVE_TO_ARTIFACT: ${{ github.event.inputs.save-to-artifact }}
+    SAVE_TO_BRANCH: ${{ github.event.inputs.save-to-branch }}
+    SAVE_TO_WIKI: ${{ github.event.inputs.save-to-wiki }}
+  
   steps:
   - name: Setup Python
     uses: actions/setup-python@v5
