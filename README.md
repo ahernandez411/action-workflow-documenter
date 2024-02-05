@@ -39,9 +39,6 @@ jobs:
         uses: ahernandez411/action-workflow-documenter@v1.0.2
         with:
           github-pat: ${{ secrets.GITHUB_TOKEN }}
-          save-to-artifact: 'false'
-          save-to-branch: 'false'
-          save-to-wiki: 'false'
       ...
 ```
 
