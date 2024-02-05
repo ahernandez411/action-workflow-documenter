@@ -10,10 +10,10 @@ inputs:
     description: If true, save to documentation as an artifact. This is mostly used for testing purposes.
     required: false
   save-to-branch:
-    description: If true, save to documentation to a branch
+    description: If true, save to documentation to a branch.
     required: false
   save-to-wiki:
-    description: If true, save to documentation to repository's wiki
+    description: If true, save to documentation to repository's wiki.
     required: false
 
 permissions:
