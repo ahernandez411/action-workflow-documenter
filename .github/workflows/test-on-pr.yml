@@ -17,7 +17,6 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Run Test with Save to Artifact
-      if: always()
       uses: ./
       with:
         github-pat: ${{ secrets.GITHUB_TOKEN }}
