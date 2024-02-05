@@ -10,11 +10,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Run Test
+    - name: Run Test with Save to Artifact
+      if: always()
       uses: ./
       with:
         save-to-artifact: "true"
         save-to-branch: "false"
+        save-to-wiki: "false"
+
+    - name: Run Test with Save to Branch
+      if: always()
+      uses: ./
+      with:
+        save-to-artifact: "false"
+        save-to-branch: "true"
         save-to-wiki: "false"
 
       
