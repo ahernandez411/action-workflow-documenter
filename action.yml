@@ -311,6 +311,13 @@ runs:
       name: actions-documentation
       path: WORKFLOWS.md
       retention-days: 1
+
+  - name: Cleanup Changes
+    if: steps.input-conditions.outputs['save-to-artifact'] == 'true'
+    shell: bash
+    run: |
+      set -x
+      rm WORKFLOWS.md      
      
       
 
