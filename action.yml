@@ -14,13 +14,12 @@ inputs:
     required: true
 
 runs:  
-  using: composite
-  
   env:
     SAVE_TO_ARTIFACT: ${{ github.event.inputs.save-to-artifact }}
     SAVE_TO_BRANCH: ${{ github.event.inputs.save-to-branch }}
     SAVE_TO_WIKI: ${{ github.event.inputs.save-to-wiki }}
   
+  using: composite    
   steps:
   - name: Setup Python
     uses: actions/setup-python@v5
