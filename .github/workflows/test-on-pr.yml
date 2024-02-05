@@ -21,8 +21,6 @@ jobs:
       with:
         github-pat: ${{ secrets.GITHUB_TOKEN }}
         save-to-artifact: "true"
-        save-to-branch: "false"
-        save-to-wiki: "false"
 
     - name: Show Files Before Artifact Download
       run: |

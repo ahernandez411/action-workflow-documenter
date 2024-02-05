@@ -9,12 +9,15 @@ inputs:
   save-to-artifact:
     description: If true, save to documentation as an artifact. This is mostly used for testing purposes.
     required: false
+    default: 'false'
   save-to-branch:
     description: If true, save to documentation to a branch.
     required: false
+    default: 'false'
   save-to-wiki:
     description: If true, save to documentation to repository's wiki.
     required: false
+    default: 'false'
 
 permissions:
   contents: write
